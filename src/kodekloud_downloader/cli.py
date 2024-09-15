@@ -36,20 +36,20 @@ def kodekloud(verbose):
     "--output-dir",
     "-o",
     default=Path.home() / "Downloads",
-    help="Output directory where downloaded files will be store.",
+    help="Output directory where downloaded files will be stored.",
 )
 @click.option(
     "--cookie",
     "-c",
     required=True,
-    help="Cookie file. Course should be accessible via this.",
+    help="Path to the cookie file. The course should be accessible via this.",
 )
 @click.option(
     "--max-duplicate-count",
     "-mdc",
     default=3,
     type=int,
-    help="If same video is downloaded this many times, then download stops",
+    help="If the same video is downloaded this many times, then the download stops.",
 )
 def dl(
     course_url,
@@ -79,7 +79,7 @@ def dl(
         )
     else:
         logging.error("Please enter a valid URL")
-        SystemExit(1)
+        raise SystemExit(1)
 
 
 @kodekloud.command()
@@ -94,7 +94,7 @@ def dl(
     is_flag=True,
     show_default=True,
     default=False,
-    help="Write in seperate markdown files.",
+    help="Write in separate markdown files.",
 )
 def dl_quiz(output_dir: Union[Path, str], sep: bool):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
