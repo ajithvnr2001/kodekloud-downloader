@@ -46,7 +46,7 @@ def download_quiz(output_dir: str, sep: bool):
             if script := question.code.get("script"):
                 quiz_markdown.append(f"\n**Code**: \n{script}")
             if question.explanation:
-                quiz_markdown.append(f"\n**Explaination**: {question.explanation}")
+                quiz_markdown.append(f"\n**Explanation**: {question.explanation}")
             if question.documentationLink:
                 quiz_markdown.append(
                     f"\n**Documentation Link**: {question.documentationLink}"
@@ -93,18 +93,17 @@ def download_course(
 
     page = requests.get(url, cookies=cj)
     soup = BeautifulSoup(page.content, "html.parser")
-    course_name_tag = soup.find("h1", class_="course_title") or soup.find(
-        "h1", class_="entry-title"
-    )
-    course_name = course_name_tag.text.strip()
-    main_lesson_content = soup.find("div", class_="lessons_main__content") or soup.find(
-        "div", class_="ld-lesson-list"
-    )
-    topics = (
-        main_lesson_content.find_all("div", class_="ld-item-list-item")
-        or main_lesson_content.find_all("div", class_="w-dyn-item")
-        or main_lesson_content.find_all("div", class_="ld-item-list-items")
-    )
+    
+    # Assuming the new site uses a different tag structure
+    course_name_tag = soup.find("h1", class_="course-title")  # Updated class for course title
+    course_name = course_name_tag.text.strip() if course_name_tag else "Unknown Course"
+    
+    # Updated class names for content section
+    main_lesson_content = soup.find("div", class_="course-content")  # Updated class for lessons container
+    if not main_lesson_content:
+        raise ValueError("Unable to find main course content")
+
+    topics = main_lesson_content.find_all("div", class_="lesson-item")  # Updated class for lesson items
     items = [Topic.make(topic) for topic in topics]
 
     downloaded_videos = defaultdict(int)
@@ -121,9 +120,9 @@ def download_course(
                     and downloaded_videos[current_video_url] > max_duplicate_count
                 ):
                     raise SystemExit(
-                        f"The folowing video is downloaded more than {max_duplicate_count}."
-                        "\nYour cookie might have expired or you don't have access/enrolled to the course."
-                        "\nPlease refresh/regenerate the cookie or enroll in the course and try again."
+                        f"The following video has been downloaded more than {max_duplicate_count} times."
+                        "\nYour cookie might have expired or you may not have access to this course."
+                        "\nPlease refresh the cookie or re-enroll in the course and try again."
                     )
                 download_video_lesson(lesson, file_path, cookie, quality)
                 downloaded_videos[current_video_url] += 1
@@ -199,7 +198,7 @@ def download_resource_lesson(lesson, file_path: Path, cookie: str) -> None:
     """
     page = requests.get(lesson.url)
     soup = BeautifulSoup(page.content, "html.parser")
-    content = soup.find("div", class_="learndash_content_wrap")
+    content = soup.find("div", class_="learndash_content_wrap")  # Adjust as necessary
 
     if content and is_normal_content(content):
         logger.info(f"Writing resource file... {file_path}...")
